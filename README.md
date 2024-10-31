@@ -6,7 +6,7 @@ A Python package to install and configure Tor and Privoxy for anonymized browsin
 
 ```bash
 pip install google_colab_tor_proxy
-
+```
 ## Usage
 
 To use the package in your Python script, you can do the following:
