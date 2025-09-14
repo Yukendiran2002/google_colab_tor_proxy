@@ -20,7 +20,7 @@ def configure_tor():
         "HashedControlPassword 16:C55D891114CC4647600E6F2BE93DB9593CAD368F18C48F3FF9B03EE7D9",
         "UseEntryGuards 0",
         "NumEntryGuards 1",
-         "NewCircuitPeriod 10",     
+        "NewCircuitPeriod 10",     
         "MaxCircuitDirtiness 10", 
         "AvoidDiskWrites 1"
     ]
@@ -30,9 +30,14 @@ def configure_tor():
 
 def configure_privoxy():
     """Configure Privoxy to route traffic through Tor."""
-    privoxy_config = "forward-socks5t / 127.0.0.1:9050 .\n"
-    with open("/etc/privoxy/config", "a") as privoxy:
-        privoxy.write(privoxy_config)
+    config_file = "/etc/privoxy/config"
+    config_line = "forward-socks5t / 127.0.0.1:9050 .\n"
+    with open(config_file, 'r') as f:
+        content = f.read()
+
+    if config_line not in content:
+        with open(config_file, 'a') as f:
+            f.write(config_line)
 
 def start_services():
     """Start Tor and Privoxy services."""
