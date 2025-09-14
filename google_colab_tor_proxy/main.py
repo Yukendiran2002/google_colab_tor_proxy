@@ -13,27 +13,42 @@ def install_dependencies():
     runn_command("sudo apt install -y tor netcat curl privoxy")
 
 def configure_tor():
-    """Configure Tor settings."""
+    """Configure Tor settings idempotently."""
+    config_file = "/etc/tor/torrc"
     torrc_config = [
         "ControlPort 9051",
         "CookieAuthentication 0",
-        "HashedControlPassword 16:C55D891114CC4647600E6F2BE93DB9593CAD368F18C48F3FF9B03EE7D9",
-        "UseEntryGuards 0",
-        "NumEntryGuards 1",
-        "NewCircuitPeriod 10",     
-        "MaxCircuitDirtiness 10", 
         "AvoidDiskWrites 1"
     ]
-    with open("/etc/tor/torrc", "a") as torrc:
-        for line in torrc_config:
-            torrc.write(line + "\n")
+
+    try:
+        with open(config_file, 'r') as f:
+            existing_content = f.read()
+    except FileNotFoundError:
+        existing_content = ""
+
+    # Figure out which lines are missing
+    lines_to_add = []
+    for line in torrc_config:
+        if line not in existing_content:
+            lines_to_add.append(line)
+
+    # If there are any missing lines, append them
+    if lines_to_add:
+        with open(config_file, 'a') as f:
+            for line in lines_to_add:
+                f.write(line + "\n")
 
 def configure_privoxy():
     """Configure Privoxy to route traffic through Tor."""
     config_file = "/etc/privoxy/config"
     config_line = "forward-socks5t / 127.0.0.1:9050 .\n"
-    with open(config_file, 'r') as f:
-        content = f.read()
+
+    try:
+        with open(config_file, 'r') as f:
+            content = f.read()
+    except FileNotFoundError:
+        content = ""
 
     if config_line not in content:
         with open(config_file, 'a') as f:
