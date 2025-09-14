@@ -69,14 +69,11 @@ def check_proxy_health():
     test_command = "curl --proxy http://127.0.0.1:8118 -s https://check.torproject.org/"
     
     for i in range(30):
-        try:
-            print(f"Attempt {i + 1}/30: Checking proxy status...", end='\r')
-            result = runn_command(test_command)
-            if result and "Congratulations. This browser is configured to use Tor." in result.stdout:
-                print("✅ Tor proxy is ready and working.")
-                return True
-        except subprocess.CalledProcessError:
-            pass
+        print(f"Attempt {i + 1}/30: Checking proxy status...", end='\r')
+        result = runn_command(test_command)
+        if result and "Congratulations. This browser is configured to use Tor." in result.stdout:
+            print("✅ Tor proxy is ready and working.")
+            return True
         time.sleep(1)
         
     print("❌ Tor proxy failed to start or is not responding.")
