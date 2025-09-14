@@ -1,11 +1,14 @@
 import subprocess
+import time
 
 def runn_command(command):
     """Run a shell command."""
     try:
         result = subprocess.run(command, shell=True, check=True, capture_output=True, text=True)
+        return result
     except subprocess.CalledProcessError as e:
         print(f"Error executing {command}: {e.stderr}")
+        return None
 
 def install_dependencies():
     """Update and install necessary packages."""
@@ -59,17 +62,30 @@ def start_services():
     runn_command("service tor start")
     runn_command("service privoxy start")
 
-def check_services():
-    """Check if services are running."""
-    runn_command("service tor status")
-    runn_command("privoxy --version")
+def check_proxy_health():
+    """Check if the Tor proxy is ready by making a test request."""
+    print("Waiting for Tor to bootstrap...")
+    test_command = "curl --proxy http://127.0.0.1:8118 -s https://check.torproject.org/"
+    
+    for _ in range(30):
+        try:
+            result = runn_command(test_command)
+            if "Congratulations. This browser is configured to use Tor." in result.stdout:
+                print("✅ Tor proxy is ready and working.")
+                return True
+        except subprocess.CalledProcessError:
+            pass
+        time.sleep(1)
+        
+    print("❌ Tor proxy failed to start or is not responding.")
+    return False
 
 def tor_proxy_setup():
     install_dependencies()
     configure_tor()
     configure_privoxy()
-    start_services()
-    check_services()
     print("Installation and configuration complete.")
-    print("Tor and Privoxy are now running.")
-    print("You can now use privoxy to route traffic through Tor via http://127.0.0.1:8118 or http://localhost:8118.")
+    start_services()
+    if check_proxy_health():
+        print("Tor and Privoxy are now running.")
+        print("You can now use privoxy to route traffic through Tor via http://127.0.0.1:8118 or http://localhost:8118.")
