@@ -58,9 +58,10 @@ def configure_privoxy():
             f.write(config_line)
 
 def start_services():
-    """Start Tor and Privoxy services."""
-    runn_command("service tor start")
-    runn_command("service privoxy start")
+    """Restart Tor and Privoxy services to apply new configurations."""
+    print("Restarting Tor and Privoxy services...")
+    runn_command("service tor restart")
+    runn_command("service privoxy restart")
 
 def check_proxy_health():
     """Check if the Tor proxy is ready by making a test request."""
@@ -70,7 +71,7 @@ def check_proxy_health():
     for _ in range(30):
         try:
             result = runn_command(test_command)
-            if "Congratulations. This browser is configured to use Tor." in result.stdout:
+            if result and "Congratulations. This browser is configured to use Tor." in result.stdout:
                 print("✅ Tor proxy is ready and working.")
                 return True
         except subprocess.CalledProcessError:
@@ -87,5 +88,5 @@ def tor_proxy_setup():
     print("Installation and configuration complete.")
     start_services()
     if check_proxy_health():
-        print("Tor and Privoxy are now running.")
+        print("Setup complete successfully.")
         print("You can now use privoxy to route traffic through Tor via http://127.0.0.1:8118 or http://localhost:8118.")
