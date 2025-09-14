@@ -68,8 +68,9 @@ def check_proxy_health():
     print("Waiting for Tor to bootstrap...")
     test_command = "curl --proxy http://127.0.0.1:8118 -s https://check.torproject.org/"
     
-    for _ in range(30):
+    for i in range(30):
         try:
+            print(f"Attempt {i + 1}/30: Checking proxy status...", end='\r')
             result = runn_command(test_command)
             if result and "Congratulations. This browser is configured to use Tor." in result.stdout:
                 print("✅ Tor proxy is ready and working.")
